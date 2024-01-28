@@ -1,0 +1,6 @@
+1. Changed intitial array initialization to use malloc, to properly allocate memory.
+2. Changed for loop in wiriting numbers to be ARRAY_SIZE, so that all elements are accessed
+3. Changed random range to %41, in theory with it at %40 the range is only +20 - -19.
+4. Added free(array) to the end, to free the allocated memory
+5. Changed file write to "%" PRId64, was initially trying to print it as an unsigned int which 
+    caused the output to be a very large number instead of a negative. 
