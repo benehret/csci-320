@@ -1,6 +1,14 @@
 //This is a basic node of the linked list. You will need to change this line to create a proper doubly-linked list. And please name it something else!
-struct SomeSortOfListNodeStructOrAnotherWithAReallyLongName{
+struct ListNode{
+    uint32_t data;
+    struct ListNode* prev;
+    struct ListNode* next;
 };
+
+typedef struct LinkedList{
+    struct ListNode* head;
+    pthread_mutex_t lock;
+} LinkedList;
 
 //This function constructs and returns a pointer to the head of the linkedlist
 //It should dynamically allocate a head and return a pointer to it
