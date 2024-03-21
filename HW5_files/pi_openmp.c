@@ -42,17 +42,11 @@ int main(int argc, char** argv) {
     int num_threads = (argc > 2) ? atoi(argv[2]) : 10;
 
     clock_gettime(CLOCK_MONOTONIC, &start); // Start the clock!
-
+    output = malloc(num_threads * sizeof(double));
     // OpenMP parallel region
     #pragma omp parallel num_threads(num_threads)
     {
-        // Dynamically allocate output array based on number of threads
-        #pragma omp single
-        {
-            output = malloc(num_threads * sizeof(double));
-        }
-        
-        find_pi();
+	find_pi();
     }
 
     double sums = 0;

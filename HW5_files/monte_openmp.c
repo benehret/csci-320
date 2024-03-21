@@ -15,7 +15,7 @@ void find_pi() {
     {
         unsigned int seed = time(NULL) + omp_get_thread_num(); // Using thread-specific seed
 
-        #pragma omp for reduction(+:count_inside_circle)
+        #pragma omp parallel reduction(+:count_inside_circle)
         for (int64_t i = 0; i < samples_per_thread; i++) {
             double x = (double)rand_r(&seed) / RAND_MAX * 1.0; // Random x coordinate between 0 and 1
             double y = (double)rand_r(&seed) / RAND_MAX * 1.0; // Random y coordinate between 0 and 1
