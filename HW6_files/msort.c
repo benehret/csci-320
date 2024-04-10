@@ -1,3 +1,4 @@
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -90,6 +91,8 @@ int is_sorted(int64_t* input, uint64_t size){
 }
 
 int main(int argc, char** argv){
+    struct timespec start, end; //structs used for timing purposes, it has two memebers, a tv_sec which is the current second, and the tv_nsec which is the current nanosecond.
+    double time_diff;
     uint64_t n; //The input size
     int64_t* input = Populate("./numbers.txt", &n); //gets the array
     /*
@@ -99,7 +102,9 @@ int main(int argc, char** argv){
     }
     printf("\n\n\n");
     */
+    clock_gettime(CLOCK_MONOTONIC, &start); //Start the clock!
     my_msort(input, n);
+    clock_gettime(CLOCK_MONOTONIC, &end);   //Stops the clock!
     /*
     printf("Array elements:\n");
     for (uint64_t i = 0; i < n; i++) {
@@ -111,6 +116,9 @@ int main(int argc, char** argv){
     int sorted = is_sorted(input, n);
     printf("Are the numbers sorted? %s \n", sorted ? "true" : "false");
    
-    printf("Time elapsed: %lf \n", 0.0);
+    time_diff = (end.tv_sec - start.tv_sec); //Difference in seconds
+    time_diff += (end.tv_nsec - start.tv_nsec) / 1e9; //Difference in nanoseconds
+
+    printf("Time elapsed: %lf seconds\n", time_diff);
     free(input);
 }
