@@ -49,8 +49,7 @@ int64_t psum_seq(int64_t* in, int64_t* out, uint64_t size){
 }
 
 
-int64_t psum_par(int64_t* in, int64_t* out, uint64_t size){
-    int64_t* temp = (int64_t*)malloc(size * sizeof(int64_t));
+int64_t psum_par(int64_t* in, int64_t* out, uint64_t size, int64_t* temp){
     #pragma omp parallel for
     for (int64_t i = 0; i < size; i++){
         out[i] = in[i];
@@ -65,7 +64,6 @@ int64_t psum_par(int64_t* in, int64_t* out, uint64_t size){
             out[i] += temp[i-pwrs];
         }
     }
-    free(temp);
     return out[size-1];
 }
 
@@ -106,7 +104,7 @@ uint64_t partition_par(int64_t* input, uint64_t size, int64_t* aux, int64_t* pos
     }
 
 
-    psum_par(aux, pos, size);
+    psum_par(aux, pos, size, out);
 
 
     #pragma omp parallel for
@@ -132,7 +130,7 @@ uint64_t partition_par(int64_t* input, uint64_t size, int64_t* aux, int64_t* pos
     
     aux[0] += newin + 1;
 
-    psum_par(aux, pos, size);
+    psum_par(aux, pos, size, out);
     #pragma omp parallel for
     for(int64_t i = 0; i < size; i++){
         if (i == 0 || pos[i] != pos[i-1]){
@@ -214,9 +212,10 @@ Returns 0 if the prefix sums agree, returns 1 if they agree
 int test_psum(int64_t* input, uint64_t size){
 	int64_t* out_seq = malloc(size * sizeof(int64_t));
 	int64_t* out_par = malloc(size * sizeof(int64_t));
+    int64_t* temp = malloc(size * sizeof(int64_t));
     
     int64_t tot_s = psum_seq(input, out_seq, size);
-    int64_t tot_p = psum_par(input, out_par, size);
+    int64_t tot_p = psum_par(input, out_par, size, temp);
     printf("Prefix Sum Sequential Total: %"PRId64"\n", tot_s);
     printf("Prefix Sum Parallel Total: %"PRId64"\n", tot_p);
     for (uint64_t i = 0; i < size; i ++){
@@ -250,7 +249,6 @@ int main(int argc, char** argv){
     }
     */
     clock_gettime(CLOCK_MONOTONIC, &start); //Start the clock!
-
     //test_psum(test,8);
     //free(test);
     my_qsort(input, n);
@@ -263,8 +261,8 @@ int main(int argc, char** argv){
     printf("\n\n\n");
     */
     //check if it's sorted.
-    int sorted = is_sorted(input, n);
-    printf("Are the numbers sorted? %s \n", sorted ? "true" : "false");
+    //int sorted = is_sorted(input, n);
+    //printf("Are the numbers sorted? %s \n", sorted ? "true" : "false");
     /*
     for (int i = 0; i < n; i++){
         printf("OUT[%d] = %" PRId64"\n", i, input[i]);
