@@ -1,3 +1,4 @@
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -33,72 +34,55 @@ int64_t* Populate(char* name, uint64_t* size){
 }
 
 // Implement the merge function as required by Mergesort
-void merge(int64_t* arr, int64_t* temp, int left, int mid, int right) {
-    int i = left;
-    int j = mid + 1;
-    int k = left;
-
+void merge(int64_t* input, int64_t* temp, uint64_t left, uint64_t mid, uint64_t right) {
+    uint64_t i = left, j = mid + 1, k = left;
     while (i <= mid && j <= right) {
-        if (arr[i] <= arr[j]) {
-            temp[k++] = arr[i++];
+        if (input[i] < input[j]) {
+            temp[k++] = input[i++];
         } else {
-            temp[k++] = arr[j++];
+            temp[k++] = input[j++];
         }
     }
     while (i <= mid) {
-        temp[k++] = arr[i++];
+        temp[k++] = input[i++];
     }
     while (j <= right) {
-        temp[k++] = arr[j++];
+        temp[k++] = input[j++];
     }
     for (i = left; i <= right; i++) {
-        arr[i] = temp[i];
+        input[i] = temp[i];
     }
 }
-
 
 /*
 Helper for msort
 */
-int my_msort_helper(int64_t* arr, int64_t* temp, int left, int right) {
-    if (left < right) {
-        int mid = left + (right - left) / 2;
+int my_msort_helper(int64_t* input, int64_t* temp, uint64_t size) {
+    if (size < 2) return 0; // Base case for recursion
 
-        #pragma omp task firstprivate(arr, temp, left, mid)
-        {
-            parallel_mergesort(arr, temp, left, mid);
-        }
-
-        #pragma omp task firstprivate(arr, temp, mid, right)
-        {
-            parallel_mergesort(arr, temp, mid + 1, right);
-        }
-
-        // Wait for the tasks to finish before merging
-        #pragma omp taskwait
-        merge(arr, temp, left, mid, right);
-    }
+    uint64_t mid = size / 2;
+    #pragma omp task firstprivate(size) if (size > 1000)
+    my_msort_helper(input, temp, mid);
+    #pragma omp task firstprivate(size) if (size > 1000)
+    my_msort_helper(input + mid, temp + mid, size - mid);
+    #pragma omp taskwait 
+    merge(input, temp, 0, mid - 1, size - 1);
     return 0;
 }
 
 /*
 Sorts the input array and puts output back into the input array
 */
-
-int my_sort(int64_t* arr, int size) {
-    int64_t* temp = malloc(sizeof(int64_t) * size);
-    if (temp == NULL) {
-        fprintf(stderr, "Failed to allocate temporary array for mergesort\n");
-        exit(EXIT_FAILURE);
-    }
-
+int my_msort(int64_t* input, uint64_t size){
+    int64_t* temp = malloc(size * sizeof(int64_t)); //Only create 1 temporary array
     #pragma omp parallel
     {
-        #pragma omp single nowait
+        #pragma omp single
         {
-            parallel_mergesort(arr, temp, 0, size - 1);
+            my_msort_helper(input, temp, size); //Calls helper
         }
     }
+    
 
     free(temp);
     return 0;
@@ -118,6 +102,8 @@ int is_sorted(int64_t* input, uint64_t size){
 }
 
 int main(int argc, char** argv){
+    struct timespec start, end; //structs used for timing purposes, it has two memebers, a tv_sec which is the current second, and the tv_nsec which is the current nanosecond.
+    double time_diff;
     uint64_t n; //The input size
     int64_t* input = Populate("./numbers.txt", &n); //gets the array
     /*
@@ -127,7 +113,9 @@ int main(int argc, char** argv){
     }
     printf("\n\n\n");
     */
+    clock_gettime(CLOCK_MONOTONIC, &start); //Start the clock!
     my_msort(input, n);
+    clock_gettime(CLOCK_MONOTONIC, &end);   //Stops the clock!
     /*
     printf("Array elements:\n");
     for (uint64_t i = 0; i < n; i++) {
@@ -139,6 +127,9 @@ int main(int argc, char** argv){
     int sorted = is_sorted(input, n);
     printf("Are the numbers sorted? %s \n", sorted ? "true" : "false");
    
-    printf("Time elapsed: %lf \n", 0.0);
+    time_diff = (end.tv_sec - start.tv_sec); //Difference in seconds
+    time_diff += (end.tv_nsec - start.tv_nsec) / 1e9; //Difference in nanoseconds
+
+    printf("Time elapsed: %lf seconds\n", time_diff);
     free(input);
 }
