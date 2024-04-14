@@ -62,9 +62,8 @@ int my_qsort(int64_t* input, uint64_t size){
 
     uint64_t p = partition(input, size);
 
-    // Recursively sort elements before partition and after partition
-    if (p > 0) my_qsort(input, p); // Sort elements before pivot
-    my_qsort(input + p + 1, size - p - 1); // Sort elements after pivot
+    if (p > 0) my_qsort(input, p);
+    my_qsort(input + p + 1, size - p - 1);
 
     return 0;
 }
@@ -89,23 +88,9 @@ int main(int argc, char** argv){
     uint64_t n; //The input size
     int64_t* input = Populate("./numbers.txt", &n); //gets the array
 
-    /*
-    printf("Array elements:\n");
-    for (uint64_t i = 0; i < n; i++) {
-        printf("%" PRId64 "\n", input[i]);
-    }
-    printf("\n\n\n");
-    */
     clock_gettime(CLOCK_MONOTONIC, &start); //Start the clock!
     my_qsort(input, n);
     clock_gettime(CLOCK_MONOTONIC, &end);   //Stops the clock!
-    /*
-    printf("Array elements:\n");
-    for (uint64_t i = 0; i < n; i++) {
-        printf("%" PRId64 "\n", input[i]);
-    }
-    printf("\n\n\n");
-    */
     
     //check if it's sorted.
     int sorted = is_sorted(input, n);

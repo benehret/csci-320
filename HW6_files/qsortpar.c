@@ -152,7 +152,7 @@ uint64_t partition_par(int64_t* input, uint64_t size, int64_t* aux, int64_t* pos
 }
 
 int my_qsort_helper(int64_t* input, uint64_t size, int64_t* aux, int64_t* pos, int64_t* out){
-    if (size > 1000000000000) {
+    if (size > 100000000000000) {
         uint64_t p = partition_par(input, size, aux, pos, out);
         #pragma omp task firstprivate(p)
         my_qsort_helper(input, p, aux, pos, out);
@@ -160,10 +160,8 @@ int my_qsort_helper(int64_t* input, uint64_t size, int64_t* aux, int64_t* pos, i
         my_qsort_helper(&input[p], size - p, &aux[p], &pos[p], &out[p]);
     } else if (size > 1){
         uint64_t p = partition(input, size);
-        #pragma omp task firstprivate(p)
-        my_qsort_helper(input ,p , aux, pos, out);
-        #pragma omp task firstprivate(p)
-        my_qsort_helper(&input[p] + 1, size - p - 1, &aux[p], &pos[p], &out[p]);
+	my_qsort_helper(input ,p , aux, pos, out);
+	my_qsort_helper(&input[p] + 1, size - p - 1, &aux[p], &pos[p], &out[p]);
     }
     #pragma omp taskwait
     return 0;
@@ -199,8 +197,7 @@ TODO: Modify if necessary
 int is_sorted(int64_t* input, uint64_t size){
 	for (uint64_t i = 1; i < size; i++){
 		if (input[i-1] > input[i]){
-            printf("MISMATSCH: i-1 = %" PRId64 " i = %"PRId64" at index: %" PRId64 " and %" PRId64 "\n\n", input[i-1] , input[i], i-1, i);
-			//return 0;
+			return 0;
 		}	
 	}
     return 1;
@@ -236,38 +233,12 @@ int main(int argc, char** argv){
     int64_t* input = Populate("./numbers.txt", &n); //gets the array
 
 
-    /*
-    printf("Array elements:\n");
-    for (uint64_t i = 0; i < n; i++) {
-        printf("%" PRId64 "\n", input[i]);
-    }
-    printf("\n\n\n");
-    */
-    /*
-    for (int i = 0; i < n; i++){
-        printf("IN[%d] = %" PRId64"\n", i, input[i]);
-    }
-    */
     clock_gettime(CLOCK_MONOTONIC, &start); //Start the clock!
-    //test_psum(test,8);
-    //free(test);
     my_qsort(input, n);
     clock_gettime(CLOCK_MONOTONIC, &end);   //Stops the clock!
-    /*
-    printf("Array elements:\n");
-    for (uint64_t i = 0; i < n; i++) {
-        printf("%" PRId64 "\n", input[i]);
-    }
-    printf("\n\n\n");
-    */
     //check if it's sorted.
-    //int sorted = is_sorted(input, n);
-    //printf("Are the numbers sorted? %s \n", sorted ? "true" : "false");
-    /*
-    for (int i = 0; i < n; i++){
-        printf("OUT[%d] = %" PRId64"\n", i, input[i]);
-    }
-    */
+    int sorted = is_sorted(input, n);
+    printf("Are the numbers sorted? %s \n", sorted ? "true" : "false");
     time_diff = (end.tv_sec - start.tv_sec); //Difference in seconds
     time_diff += (end.tv_nsec - start.tv_nsec) / 1e9; //Difference in nanoseconds
 

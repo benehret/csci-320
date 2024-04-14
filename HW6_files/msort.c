@@ -32,7 +32,6 @@ int64_t* Populate(char* name, uint64_t* size){
     return array;
 }
 
-// Implement the merge function as required by Mergesort
 void merge(int64_t* input, int64_t* temp, uint64_t left, uint64_t mid, uint64_t right) {
     uint64_t i = left, j = mid + 1, k = left;
     while (i <= mid && j <= right) {
@@ -57,7 +56,7 @@ void merge(int64_t* input, int64_t* temp, uint64_t left, uint64_t mid, uint64_t 
 Helper for msort
 */
 int my_msort_helper(int64_t* input, int64_t* temp, uint64_t size) {
-    if (size < 2) return 0; // Base case for recursion
+    if (size < 2) return 0;
 
     uint64_t mid = size / 2;
     my_msort_helper(input, temp, mid);
@@ -71,7 +70,7 @@ Sorts the input array and puts output back into the input array
 */
 int my_msort(int64_t* input, uint64_t size){
     int64_t* temp = malloc(size * sizeof(int64_t)); //Only create 1 temporary array
-    my_msort_helper(input, temp, size); //Calls helper
+    my_msort_helper(input, temp, size);
 
     free(temp);
     return 0;
@@ -95,23 +94,9 @@ int main(int argc, char** argv){
     double time_diff;
     uint64_t n; //The input size
     int64_t* input = Populate("./numbers.txt", &n); //gets the array
-    /*
-    printf("Array elements:\n");
-    for (uint64_t i = 0; i < n; i++) {
-        printf("%" PRId64 "\n", input[i]);
-    }
-    printf("\n\n\n");
-    */
     clock_gettime(CLOCK_MONOTONIC, &start); //Start the clock!
     my_msort(input, n);
     clock_gettime(CLOCK_MONOTONIC, &end);   //Stops the clock!
-    /*
-    printf("Array elements:\n");
-    for (uint64_t i = 0; i < n; i++) {
-        printf("%" PRId64 "\n", input[i]);
-    }
-    printf("\n\n\n");
-    */
     //check if it's sorted.
     int sorted = is_sorted(input, n);
     printf("Are the numbers sorted? %s \n", sorted ? "true" : "false");
